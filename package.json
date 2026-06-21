@@ -3,21 +3,18 @@
   "version": "1.0.0",
   "description": "Official JavaScript SDK for the Betnex Casino API",
   "type": "module",
-  "main": "./src/index.js",
+  "main": "./dist/sdk.js",
   "exports": {
-    ".": "./src/index.js"
+    ".": "./dist/sdk.js"
   },
   "files": [
-    "src",
+    "dist",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "start": "node examples/basic.js",
-    "dev": "node --watch examples/basic.js",
-    "test": "node examples/basic.js",
-    "prepublishOnly": "npm test",
-    "publish:npm": "npm publish --access public"
+    "build": "esbuild src/index.js --bundle --platform=node --format=esm --minify --outfile=dist/sdk.js",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "betnex",
@@ -48,5 +45,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
   }
 }
