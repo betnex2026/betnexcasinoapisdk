@@ -5,10 +5,6 @@ import {
   createCallbackResponse,
 } from "@betnex/sdk";
 
-import * as SDK from "@betnex/sdk";
-
-console.log(SDK);
-
 const api = new Betnex(process.env.BETNEX_API_KEY, {
   headerName: "x-betnex-key",
   debug: true,
@@ -42,7 +38,7 @@ async function main() {
 
     const launch = await api.launchGame({
       username: "testuserking",
-      gameId: "a04d1f3eb8ccec8a4823bdf18e3f0e84",
+      gameId: games.games[0].id,
       money: 1000,
       platform: 1,
       currency: "INR",
