@@ -120,12 +120,23 @@ row(
 row(`${c.dim}       ${c.cyan}contact@betnex.co${c.reset}`, { indent: 0 });
 blank();
 
-// ── Quick start section ──────────────────────────────────────────────────────
-section(`${c.bold}${c.cyan} QUICK START ${c.reset}${c.cyan}`);
+// ── Imports section ──────────────────────────────────────────────────────────
+section(`${c.bold}${c.cyan} IMPORTS ${c.reset}${c.cyan}`);
 
 blank();
+
+// ESM
+row(`${c.dim}   // ESM (import)${c.reset}`, { indent: 0 });
 row(
-  `${c.dim}   $${c.reset}  ${c.green}const${c.reset} ${c.white}betnex${c.reset} ${c.dim}=${c.reset} ${c.yellow}require${c.reset}${c.dim}(${c.reset}${c.green}'@betnex/sdk'${c.reset}${c.dim})${c.reset}`,
+  `${c.magenta}   import${c.reset} ${c.dim}{${c.reset} ${c.white}Betnex${c.reset} ${c.dim}}${c.reset} ${c.magenta}from${c.reset} ${c.green}'@betnex/sdk'${c.reset}`,
+  { indent: 0 }
+);
+blank();
+
+// CommonJS
+row(`${c.dim}   // CommonJS (require)${c.reset}`, { indent: 0 });
+row(
+  `${c.magenta}   const${c.reset} ${c.dim}{${c.reset} ${c.white}Betnex${c.reset} ${c.dim}}${c.reset} ${c.magenta}=${c.reset} ${c.cyan}require${c.reset}${c.dim}(${c.reset}${c.green}'@betnex/sdk'${c.reset}${c.dim})${c.reset}${c.dim};${c.reset}`,
   { indent: 0 }
 );
 blank();

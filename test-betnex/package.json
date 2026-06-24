@@ -1,0 +1,16 @@
+{
+  "name": "test-betnex",
+  "version": "1.0.0",
+  "description": "",
+  "type": "commonjs",
+  "main": "test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@betnex/sdk": "^1.0.5"
+  }
+}
