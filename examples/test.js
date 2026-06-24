@@ -1,9 +1,9 @@
 import {
-  Betnex,
-  verifyCallback,
   calculateBalance,
   createCallbackResponse,
-} from "../src/index.js";
+  verifyCallback,
+  Betnex,
+} from "../dist/index.esm.js";
 
 const api = new Betnex(process.env.BETNEX_API_KEY, {
   // Optional
