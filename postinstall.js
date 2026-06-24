@@ -44,11 +44,11 @@ function row(content = "", opts = {}) {
   } else {
     line = " ".repeat(indent) + pad(content, inner - indent);
   }
-  console.log(`${c.cyan}║${c.reset}${line}${c.cyan}║${c.reset}`);
+  console.error(`${c.cyan}║${c.reset}${line}${c.cyan}║${c.reset}`);
 }
 
 function divider(char = "─") {
-  console.log(`${c.cyan}╠${"═".repeat(W)}╣${c.reset}`);
+  console.error(`${c.cyan}╠${"═".repeat(W)}╣${c.reset}`);
 }
 
 function blank() {
@@ -59,7 +59,7 @@ function section(label) {
   const inner = W - 2;
   const stripped = label.replace(/\x1b\[[0-9;]*m/g, "");
   const right = inner - 2 - stripped.length;
-  console.log(
+  console.error(
     `${c.cyan}╟─${c.reset}${label}${"─".repeat(Math.max(0, right))}${c.cyan}╢${
       c.reset
     }`
@@ -67,7 +67,7 @@ function section(label) {
 }
 
 // ── Top border ──────────────────────────────────────────────────────────────
-console.log(`\n${c.cyan}╔${"═".repeat(W)}╗${c.reset}`);
+console.error(`\n${c.cyan}╔${"═".repeat(W)}╗${c.reset}`);
 
 blank();
 
@@ -152,4 +152,4 @@ row(
 blank();
 
 // Bottom border
-console.log(`${c.cyan}╚${"═".repeat(W)}╝${c.reset}\n`);
+console.error(`${c.cyan}╚${"═".repeat(W)}╝${c.reset}\n`);
