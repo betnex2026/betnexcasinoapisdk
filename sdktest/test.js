@@ -111,7 +111,7 @@ const apiKey = process.env.BETNEX_API_KEY;
 
 const api = new Betnex(apiKey, {
   headerName: "x-betnex-key",
-  debug: true,
+  debug: false,
 });
 
 async function main() {
