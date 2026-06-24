@@ -10,6 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@betnex/sdk": "^1.0.6"
+    "@betnex/sdk": "^1.0.7"
   }
 }
