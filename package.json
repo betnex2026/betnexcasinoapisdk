@@ -1,22 +1,28 @@
 {
   "name": "@betnex/sdk",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Official JavaScript SDK for the Betnex Casino API",
   "type": "module",
-  "main": "./src/index.js",
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.esm.js",
   "exports": {
-    ".": "./src/index.js"
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js"
+    }
   },
-  "test": "node examples/testsdk.js",
   "files": [
-    "src",
+    "dist",
+    "postinstall.js",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
+    "build": "rollup -c",
     "test": "node examples/testsdk.js",
-    "publish:npm": "npm publish --access public",
-    "build": "rollup -c"
+    "postinstall": "node postinstall.js",
+    "prepublishOnly": "npm run build",
+    "publish:npm": "npm publish --access public"
   },
   "keywords": [
     "betnex",
@@ -26,6 +32,7 @@
     "slots",
     "live-casino",
     "sportsbook",
+    "betting",
     "turnkeyxgaming",
     "aggregation"
   ],
