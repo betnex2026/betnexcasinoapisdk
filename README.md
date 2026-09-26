@@ -126,25 +126,18 @@ const api = new Betnex(process.env.BETNEX_API_KEY);
 ```javascript
 const api = new Betnex(process.env.BETNEX_API_KEY, {
   timeout: 10000, // Request timeout in ms (default: 10000)
-  retries: 1, // Number of retries on failure
+  retries: 3, // Number of retries on failure (default: 3)
   debug: false, // Enable debug logging (disable in production)
-  headerName: "x-betnex-key", // Authentication header name
 });
 ```
 
-### Authentication Headers
+### Authentication
 
-Betnex supports two authentication header names — use whichever fits your setup:
-
-| Header                 | Description        |
-| ---------------------- | ------------------ |
-| `x-betnex-key`         | Default header     |
-| `x-turnkeyxgaming-key` | Alternative header |
+All API requests authenticate with the `x-betnex-key` header:
 
 ```javascript
-const api = new Betnex(process.env.BETNEX_API_KEY, {
-  headerName: "x-turnkeyxgaming-key",
-});
+const api = new Betnex(process.env.BETNEX_API_KEY);
+// sends: x-betnex-key: <api key>
 ```
 
 ### Debug Logging
@@ -214,15 +207,24 @@ window.location.href = launch.payload.game_launch_url;
 
 **Options:**
 
-| Parameter  | Type     | Required | Description                           |
-| ---------- | -------- | -------- | ------------------------------------- |
-| `username` | `string` | ✅       | Unique player identifier              |
-| `gameId`   | `string` | ✅       | Game UID from `getGames()`            |
-| `money`    | `number` | ✅       | Player's current balance              |
-| `platform` | `number` | ✅       | `1` = desktop, `2` = mobile           |
-| `currency` | `string` | ✅       | Currency code (e.g. `"INR"`, `"USD"`) |
-| `home_url` | `string` | ✅       | URL to redirect on game exit          |
-| `lang`     | `string` | ✅       | Language code (e.g. `"en"`)           |
+| Parameter      | Type     | Required | Description                                                                                       |
+| -------------- | -------- | -------- | ------------------------------------------------------------------------------------------------- |
+| `username`     | `string` | ✅       | Lowercase alphanumeric 4–32 chars (e.g. `"player123"`)                                            |
+| `gameId`       | `string` | ✅       | Game UID from `getGames()`                                                                        |
+| `money`        | `number` | ✅       | Player's current balance                                                                          |
+| `platform`     | `number` | ✅       | `1` = desktop/web, `2` = mobile/H5                                                                |
+| `currency`     | `string` | ⚠️       | Required on TEST/EXCLUSIVE plans; **omit** on single-currency STARTER/STANDARD/ENTERPRISE (PROD)  |
+| `home_url`     | `string` | ✅       | URL to redirect on game exit (must start with `http://` or `https://`)                            |
+| `lang`         | `string` | ❌       | Language code, defaults to `"en"`                                                                 |
+| `extras`       | `string` | ❌       | Optional theme string, max 100 chars (e.g. `"sboTheme=1"`)                                        |
+| `callback_url` | `string` | ❌       | Required only if your account uses per-request callbacks (`requestbodycallback: true`)            |
+
+### `getFilteredProviders({ currency, lang })` / `getFilteredGames({ providercode, currency, lang })`
+
+```javascript
+const providers = await api.getFilteredProviders({ currency: "INR" });
+const games = await api.getFilteredGames({ providercode: "SPRIBE", currency: "INR" });
+```
 
 ---
 
@@ -698,12 +700,20 @@ try {
 
 ## Configuration Reference
 
-| Option       | Type      | Default          | Description                       |
-| ------------ | --------- | ---------------- | --------------------------------- |
-| `timeout`    | `number`  | `10000`          | Request timeout in milliseconds   |
-| `retries`    | `number`  | `1`              | Retry attempts on network failure |
-| `debug`      | `boolean` | `false`          | Enable verbose SDK logs           |
-| `headerName` | `string`  | `"x-betnex-key"` | Authentication header name        |
+| Option    | Type      | Default                                    | Description                     |
+| --------- | --------- | ------------------------------------------ | ------------------------------- |
+| `baseUrl` | `string`  | `"https://livecasinoapi.betnex.co/casino"` | API base URL (do not add `/`)   |
+| `timeout` | `number`  | `10000`                                    | Request timeout in milliseconds |
+| `retries` | `number`  | `3`                                        | Retry attempts on failure       |
+| `debug`   | `boolean` | `false`                                    | Enable verbose SDK logs         |
+
+> Auth header is fixed to `x-betnex-key` — no configuration needed.
+
+```javascript
+const api = new Betnex(process.env.BETNEX_API_KEY, {
+  baseUrl: "https://livecasinoapi.betnex.co/casino", // default, override only for testing
+});
+```
 
 ---
 
@@ -711,6 +721,7 @@ try {
 
 ### Test Environment
 
+- Base URL (default in SDK): `https://livecasinoapi.betnex.co/casino`
 - Generate a Test API Key at [casinoapi.betnex.co](https://casinoapi.betnex.co) — no commercial agreement required.
 - Designed for integration testing, callback testing, wallet validation, launch URL validation, and provider verification.
 

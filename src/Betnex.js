@@ -2,7 +2,8 @@ import axios from "axios";
 import { DEFAULT_CONFIG, ENDPOINTS } from "./constants.js";
 import { BetnexError } from "./errors/BetnexError.js";
 
-const SUPPORTED_HEADERS = ["x-betnex-key", "x-turnkeyxgaming-key"];
+const AUTH_HEADER = "x-betnex-key";
+const SUPPORTED_HEADERS = [AUTH_HEADER];
 let bannerShown = false;
 
 // ── Terminal styling ─────────────────────────────────────────
@@ -132,6 +133,12 @@ export class Betnex {
       ...options,
     };
 
+    // Normalize baseUrl: strip trailing slashes so endpoint joins are clean.
+    // New production base: https://livecasinoapi.betnex.co/casino
+    if (typeof this.config.baseUrl === "string") {
+      this.config.baseUrl = this.config.baseUrl.replace(/\/+$/, "");
+    }
+
     this.validateConfig();
 
     this.client = axios.create({
@@ -148,11 +155,9 @@ export class Betnex {
   }
 
   validateConfig() {
-    if (!SUPPORTED_HEADERS.includes(this.config.headerName)) {
+    if (this.config.headerName !== AUTH_HEADER) {
       throw new BetnexError(
-        `Unsupported header name. Supported values: ${SUPPORTED_HEADERS.join(
-          ", "
-        )}`
+        `Unsupported header name. Only "${AUTH_HEADER}" is supported`
       );
     }
 
@@ -254,14 +259,95 @@ export class Betnex {
   }
 
   async getGames(provider) {
-    if (!provider || typeof provider !== "string") {
+    if (!provider || typeof provider !== "string" || !provider.trim()) {
       throw new BetnexError("provider must be a valid string");
     }
 
     return this.request(async () => {
       const { data } = await this.client.get(ENDPOINTS.GAMES, {
         params: {
-          provider,
+          provider: provider.trim(),
+        },
+      });
+
+      return data;
+    });
+  }
+
+  async getFilteredProviders({ currency, lang } = {}) {
+    if (
+      currency !== undefined &&
+      currency !== null &&
+      currency !== "" &&
+      (typeof currency !== "string" ||
+        !/^[A-Za-z]{3,4}$/.test(currency.trim()))
+    ) {
+      throw new BetnexError(
+        "currency must be an ISO code like 'INR' or 'USDT'"
+      );
+    }
+
+    if (
+      lang !== undefined &&
+      lang !== null &&
+      lang !== "" &&
+      typeof lang !== "string"
+    ) {
+      throw new BetnexError("lang must be a string");
+    }
+
+    return this.request(async () => {
+      const { data } = await this.client.get(ENDPOINTS.FILTER_PROVIDERS, {
+        params: {
+          ...(currency
+            ? { currency: String(currency).trim().toUpperCase() }
+            : {}),
+          ...(lang ? { lang: String(lang).trim() } : {}),
+        },
+      });
+
+      return data;
+    });
+  }
+
+  async getFilteredGames({ providercode, currency, lang } = {}) {
+    if (
+      !providercode ||
+      typeof providercode !== "string" ||
+      !providercode.trim()
+    ) {
+      throw new BetnexError("providercode must be a valid string");
+    }
+
+    if (
+      currency !== undefined &&
+      currency !== null &&
+      currency !== "" &&
+      (typeof currency !== "string" ||
+        !/^[A-Za-z]{3,4}$/.test(currency.trim()))
+    ) {
+      throw new BetnexError(
+        "currency must be an ISO code like 'INR' or 'USDT'"
+      );
+    }
+
+    if (
+      lang !== undefined &&
+      lang !== null &&
+      lang !== "" &&
+      typeof lang !== "string"
+    ) {
+      throw new BetnexError("lang must be a string");
+    }
+
+    return this.request(async () => {
+      const { data } = await this.client.get(ENDPOINTS.FILTER_GAMES, {
+        params: {
+          providercode: providercode.trim(),
+          ...(currency
+            ? { currency: String(currency).trim().toUpperCase() }
+            : {}),
+          ...(lang ? { lang: String(lang).trim() } : {}),
         },
       });
 
@@ -282,6 +368,16 @@ export class Betnex {
       throw new BetnexError("username must be a string");
     }
 
+    if (payload.username !== payload.username.toLowerCase()) {
+      throw new BetnexError("username must be in lowercase only");
+    }
+
+    if (!/^[a-z0-9]{4,32}$/.test(payload.username)) {
+      throw new BetnexError(
+        "username must be alphanumeric and 4-32 characters long"
+      );
+    }
+
     if (typeof payload.gameId !== "string") {
       throw new BetnexError("gameId must be a string");
     }
@@ -290,8 +386,56 @@ export class Betnex {
       throw new BetnexError("money must be numeric");
     }
 
+    if (typeof payload.money !== "number") {
+      throw new BetnexError("money must be a number");
+    }
+
+    if (![1, 2].includes(payload.platform)) {
+      throw new BetnexError("platform must be 1 (web) or 2 (H5)");
+    }
+
     if (!this.isValidUrl(payload.home_url)) {
       throw new BetnexError("home_url must be a valid URL");
+    }
+
+    if (
+      payload.currency !== undefined &&
+      payload.currency !== null &&
+      payload.currency !== "" &&
+      (typeof payload.currency !== "string" ||
+        !/^[A-Za-z]{3,4}$/.test(payload.currency.trim()))
+    ) {
+      throw new BetnexError(
+        "currency must be an ISO code like 'INR' or 'USDT' (omit it on single-currency STARTER/STANDARD/ENTERPRISE plans)"
+      );
+    }
+
+    if (
+      payload.extras !== undefined &&
+      payload.extras !== null &&
+      typeof payload.extras !== "string"
+    ) {
+      throw new BetnexError("extras must be a string if provided");
+    }
+
+    if (typeof payload.extras === "string" && payload.extras.length > 100) {
+      throw new BetnexError("extras string too long (max 100 chars)");
+    }
+
+    if (
+      payload.callback_url !== undefined &&
+      payload.callback_url !== null &&
+      payload.callback_url !== ""
+    ) {
+      if (
+        typeof payload.callback_url !== "string" ||
+        !/^https?:\/\//i.test(payload.callback_url) ||
+        !this.isValidUrl(payload.callback_url)
+      ) {
+        throw new BetnexError(
+          "callback_url must be a valid URL starting with http:// or https://"
+        );
+      }
     }
 
     const requestPayload = {
@@ -302,10 +446,15 @@ export class Betnex {
       home_url: payload.home_url,
 
       ...(payload.currency && {
-        currency: payload.currency,
+        currency: String(payload.currency).trim().toUpperCase(),
       }),
 
-      lang: payload.lang,
+      lang: payload.lang || "en",
+
+      ...(payload.extras ? { extras: payload.extras.trim() } : {}),
+      ...(payload.callback_url
+        ? { callback_url: payload.callback_url }
+        : {}),
     };
 
     if (this.config.debug) {
@@ -330,11 +479,9 @@ export class Betnex {
   }
 
   setHeaderName(headerName) {
-    if (!SUPPORTED_HEADERS.includes(headerName)) {
+    if (headerName !== AUTH_HEADER) {
       throw new BetnexError(
-        `Unsupported header name. Supported values: ${SUPPORTED_HEADERS.join(
-          ", "
-        )}`
+        `Unsupported header name. Only "${AUTH_HEADER}" is supported`
       );
     }
 
